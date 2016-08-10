@@ -85,7 +85,7 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image){
 
 void CRF::weightAndAggregate(){
 	for(int i=0; i<height; i++){
-		for(int i=0; i<width; i++){
+		for(int j=0; i<width; j++){
 			//
 		}
 	}
