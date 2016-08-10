@@ -6,6 +6,7 @@ using namespace MeanField::Filtering;
 CRF::CRF(int width, int height, int dimensions, float spatialSD,
 		 float bilateralSpatialSD, float bilateralIntensitySD) :
 	width(width), height(height), dimensions(dimensions),
+	spatialWeight(1.0), bilateralWeight(1.0),
 	spatialSD(spatialSD), bilateralSpatialSD(bilateralSpatialSD),
 	bilateralIntensitySD(bilateralIntensitySD),
 	QDistribution(new float[width*height*dimensions]()),
@@ -46,10 +47,17 @@ void CRF::runInferenceIteration(const unsigned char *image, const float *unaries
 	filterBilateral(unaries, image);
 	weightAndAggregate();
 	applyCompatabilityTransform();
-	subtractQDistribution();
-	applySoftmax();
+	subtractQDistribution(unaries, aggregatedFilters.get(), QDistributionTmp.get());
+	applySoftmax(QDistribution.get(), QDistributionTmp.get());
 }
 
+void CRF::setSpatialWeight(float weight){
+	spatialWeight = weight;
+}
+
+void CRF::setBilateralWeight(float weight){
+	bilateralWeight = weight;
+}
 
 void CRF::reset(){
 	for(int i=0; i<width*height*dimensions; i++){
@@ -86,19 +94,33 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image){
 void CRF::weightAndAggregate(){
 	for(int i=0; i<height; i++){
 		for(int j=0; j<width; j++){
-			//
+			int idx = i*width + j;
+			weightAndAggregateIndividual(gaussianOut.get(), bilateralOut.get(), aggregatedFilters.get(),
+										 spatialWeight, bilateralWeight, idx);
 		}
 	}
 }
 
 void CRF::applyCompatabilityTransform(){
-	//
+	for(int i=0; i<height; i++){
+		for(int j=0; j<width; j++){
+			int idx = i*width + j;
+			applyCompatabilityTransformIndividual(pottsModel.get(), aggregatedFilters.get(), idx, dimensions);
+		}
+	}
 }
 
-void CRF::subtractQDistribution(){
-	//
+void CRF::subtractQDistribution(const float *unaries, const float *QDist, float *out){
+	for(int i=0; i<width*height*dimensions; i++){
+		out[i] = unaries[i] - QDist[i];
+	}
 }
 
-void CRF::applySoftmax(){
-	//
+void CRF::applySoftmax(const float *QDist, float *out){
+	for(int i=0; i<height; i++){
+		for(int j=0; j<width; j++){
+			int idx = i*width + j;
+			applySoftmaxIndividual(QDist, out, idx, dimensions);
+		}
+	}
 }
