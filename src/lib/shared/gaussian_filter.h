@@ -14,11 +14,14 @@ namespace MeanField{
 			}
 		}
 
-		inline void applyGaussianKernel(const float *kernel, const float *input, const float *output,
+		inline void applyGaussianKernel(const float *kernel, const float *input, float *output,
 										float sd, int dim, int x, int y, int W, int H){
 			float normaliser = 0.0;
 			float factor;
-			float channelSum[dim]();
+			float channelSum[dim];
+			for(int i=0; i<dim; i++){
+				channelSum[i] = 0.0;
+			}
 
 			int sd_int = (int)sd;
 			int idx_x, idx_y;

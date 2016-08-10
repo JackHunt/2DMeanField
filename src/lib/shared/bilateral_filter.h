@@ -6,11 +6,14 @@
 namespace MeanField{
 	namespace Filtering{
 		inline void applyBilateralKernel(const float *spatial_kernel, const float *intensity_kernel,
-										 const float *input, const unsigned char *rgb, const float *output,
+										 const float *input, const unsigned char *rgb, float *output,
 										 float sd_spatial, float sd_intensity, int dim, int x, int y, int W, int H){
 			float normaliser = 0.0;
 			float spatialFactor, intensityFactor;
-			float channelSum[dim]();
+			float channelSum[dim];
+			for(int i=0; i<dim; i++){
+				channelSum[i] = 0.0;
+			}
 
 			int sd_int = (sd_spatial > sd_intensity) ? (int)sd_spatial : (int)sd_intensity;
 			int idx_x, idx_y, idx_c, idx_n;
@@ -33,7 +36,7 @@ namespace MeanField{
 					spatialFactor = spatial_kernel[i+sd_int]*spatial_kernel[j+sd_int];
 					intensityFactor = intensity_kernel[rgb[idx_n] - rgb[idx_c]]*//R
 						intensity_kernel[rgb[idx_n + 1] - rgb[idx_c + 1]]*//G
-						intensity_kernel[rgb[idx_n + 2] - rgb[idx_c + 2]]//B
+						intensity_kernel[rgb[idx_n + 2] - rgb[idx_c + 2]];//B
 					
 					normaliser += spatialFactor*intensityFactor;
 

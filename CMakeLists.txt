@@ -12,7 +12,7 @@ else(MSVC_IDE)
 endif(MSVC_IDE)
 
 #Add shared library.
-add_subdirectory(lib)
+add_subdirectory(src/lib)
 
 #Add demo.
-add_subdirectory(app)
+#add_subdirectory(src/app)
