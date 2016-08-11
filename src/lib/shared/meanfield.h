@@ -11,10 +11,19 @@ namespace MeanField{
 	}
 
 	inline void applyCompatabilityTransformIndividual(const float *potts, float *out, int idx, int dim){
+		float perDimSum[dim];
+		for(int i=0; i<dim; i++){
+			perDimSum[i] = 0.0;
+		}
+		
 		for(int i=0; i<dim; i++){
 			for(int j=0; j<dim; j++){
-				out[idx*dim + j] *= potts[i*dim + j];
+				perDimSum[i] += out[idx*dim + j]*potts[i*dim + j];
 			}
+		}
+
+		for(int i=0; i<dim; i++){
+			out[idx*dim + i] = perDimSum[i];
 		}
 	}
 

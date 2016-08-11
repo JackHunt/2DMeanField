@@ -13,7 +13,7 @@
 namespace MeanFieldDemo{
 	int noColours = 0;
 	int colourMap[255] = {0};
-	const int M = 21;//VOC classes
+	const int M = 3;
 	
 //	void unariesFromLabelling(const int *inputLabelling, float *outputUnary, int W, int H, int dim)
 //	void labellingFromUnaries(const float *inputUnaries, int *outputLabelling, int W, int H, int dim);

@@ -77,7 +77,7 @@ float *CRF::getQ(){
 void CRF::filterGaussian(const float *unaries){
 	for(int i=0; i<height; i++){
 		for(int j=0; j<width; j++){
-			applyGaussianKernel(spatialKernel.get(), unaries, gaussianOut.get(), spatialSD, dimensions, i, j, width, height);
+			applyGaussianKernel(spatialKernel.get(), unaries, gaussianOut.get(), spatialSD, dimensions, j, i, width, height);
 		}
 	}
 }
@@ -87,7 +87,7 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image){
 		for(int j=0; j<width; j++){
 			applyBilateralKernel(bilateralSpatialKernel.get(), bilateralIntensityKernel.get(), unaries,
 								 image, bilateralOut.get(), bilateralSpatialSD, bilateralIntensitySD,
-								 dimensions, i, j, width, height);
+								 dimensions, j, i, width, height);
 		}
 	}
 }

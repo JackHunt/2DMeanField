@@ -10,7 +10,7 @@ namespace MeanField{
 			float x;
 			for(int i=0; i<dim; i++){
 				x = i-rad;
-				out[i] = expf(-(x*x) / 2*M_PI*sd*sd);
+				out[i] = expf(-(i*i) / (2.0*sd*sd));
 			}
 		}
 
@@ -37,7 +37,7 @@ namespace MeanField{
 					if(idx_x < 0 || idx_x >= W){
 						continue;
 					}
-					factor = kernel[i+sd_int]*kernel[j+sd_int];
+					factor = kernel[(int)fabs(i)]*kernel[(int)fabs(j)];
 					normaliser += factor;
 
 					//Update cumulative output for each dimension/channel.

@@ -1,5 +1,11 @@
 #import "demo_app.h"
 
+/*
+ *Much of the code in this file is derived from http://www.philkr.net/code from the code
+ *package for the paper "Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials",
+ *as such, all rights belong to Philip Krahenbuhl.
+ */
+
 using namespace MeanFieldDemo;
 
 int colourToIndex(const cv::Vec3b &colour){
@@ -104,7 +110,7 @@ int main(int argc, char* argv[]){
 	unariesFromLabelling(annotLabelling, unaries, annotImage.cols, annotImage.rows, M);
 
 	//Create a new CRF and perform Mean Field Inference.
-	MeanField::CPU::CRF crf(annotImage.cols, annotImage.rows, M, 5.0, 10.0, 10.0);
+	MeanField::CPU::CRF crf(annotImage.cols, annotImage.rows, M, 10.0, 30.0, 15.0);
 	crf.setSpatialWeight(5.0);
 	crf.setBilateralWeight(10.0);
 	crf.runInference(rgbImage.data, unaries, 5);

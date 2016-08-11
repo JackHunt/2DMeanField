@@ -33,10 +33,10 @@ namespace MeanField{
 					idx_c = 3*(y*W + x);//Current pixel idx.
 					idx_n = 3*(idx_y*W + idx_x);//Neighbour idx.
 					
-					spatialFactor = spatial_kernel[i+sd_int]*spatial_kernel[j+sd_int];
-					intensityFactor = intensity_kernel[rgb[idx_n] - rgb[idx_c]]*//R
-						intensity_kernel[rgb[idx_n + 1] - rgb[idx_c + 1]]*//G
-						intensity_kernel[rgb[idx_n + 2] - rgb[idx_c + 2]];//B
+					spatialFactor = spatial_kernel[(int)fabs(i)]*spatial_kernel[(int)fabs(j)];
+					intensityFactor = intensity_kernel[(int)fabs(rgb[idx_n] - rgb[idx_c])]*//R
+						intensity_kernel[(int)fabs(rgb[idx_n + 1] - rgb[idx_c + 1])]*//G
+						intensity_kernel[(int)fabs(rgb[idx_n + 2] - rgb[idx_c + 2])];//B
 					
 					normaliser += spatialFactor*intensityFactor;
 
