@@ -13,7 +13,7 @@ namespace MeanField{
 	inline void applyCompatabilityTransformIndividual(const float *potts, float *out, int idx, int dim){
 		for(int i=0; i<dim; i++){
 			for(int j=0; j<dim; j++){
-				out[idx*dim + i] *= potts[i*dim + j];
+				out[idx*dim + j] *= potts[i*dim + j];
 			}
 		}
 	}
@@ -23,8 +23,8 @@ namespace MeanField{
 		int localIdx;
 		for(int i=0; i<dimensions; i++){
 			localIdx = idx*dimensions + i;
-			out[localIdx] = QDistribution[localIdx];
-			normaliser += QDistribution[localIdx];
+			out[localIdx] = expf(QDistribution[localIdx]);
+			normaliser += out[localIdx];
 		}
 
 		for(int i=0; i<dimensions; i++){
@@ -34,7 +34,7 @@ namespace MeanField{
 	
 	class CRF{
 	protected:
-		const int KERNEL_SIZE = 256;
+		static const int KERNEL_SIZE = 256;
 		
 		virtual void filterGaussian(const float *unaries) = 0;
 		virtual void filterBilateral(const float *unaries, const unsigned char *image) = 0;

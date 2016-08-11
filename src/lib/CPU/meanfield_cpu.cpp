@@ -37,8 +37,9 @@ CRF::~CRF(){
 }
 			
 void CRF::runInference(const unsigned char *image, const float *unaries, int iterations){
-	for(int i=0; i<iterations; i++){
-		runInferenceIteration(image, unaries);
+	runInferenceIteration(image, unaries);
+	for(int i=0; i<iterations-1; i++){
+		runInferenceIteration(image, QDistribution.get());
 	}
 }
 
@@ -48,7 +49,7 @@ void CRF::runInferenceIteration(const unsigned char *image, const float *unaries
 	weightAndAggregate();
 	applyCompatabilityTransform();
 	subtractQDistribution(unaries, aggregatedFilters.get(), QDistributionTmp.get());
-	applySoftmax(QDistribution.get(), QDistributionTmp.get());
+	applySoftmax(QDistributionTmp.get(), QDistribution.get());
 }
 
 void CRF::setSpatialWeight(float weight){
@@ -94,9 +95,11 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image){
 void CRF::weightAndAggregate(){
 	for(int i=0; i<height; i++){
 		for(int j=0; j<width; j++){
-			int idx = i*width + j;
-			weightAndAggregateIndividual(gaussianOut.get(), bilateralOut.get(), aggregatedFilters.get(),
-										 spatialWeight, bilateralWeight, idx);
+			for(int k=0; k<dimensions; k++){
+				int idx = (i*width + j)*dimensions + k;
+				weightAndAggregateIndividual(gaussianOut.get(), bilateralOut.get(), aggregatedFilters.get(),
+											 spatialWeight, bilateralWeight, idx);
+			}
 		}
 	}
 }

@@ -11,8 +11,10 @@ else(MSVC_IDE)
   set(CMAKE_CXX_FLAGS_RELEASE "-std=c++11 -fPIC -O3 -march=native")
 endif(MSVC_IDE)
 
+find_package(OpenCV REQUIRED)
+
 #Add shared library.
 add_subdirectory(src/lib)
 
 #Add demo.
-#add_subdirectory(src/app)
+add_subdirectory(src/app)

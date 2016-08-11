@@ -19,7 +19,7 @@ namespace MeanField{
 			int idx_x, idx_y, idx_c, idx_n;
 			//Convolve for each channel.
 			for(int i=-sd_int; i<sd_int; i++){
-				idx_y = x+i;
+				idx_y = y+i;
 				if(idx_y < 0 || idx_y >= H){
 					continue;
 				}
@@ -41,14 +41,14 @@ namespace MeanField{
 					normaliser += spatialFactor*intensityFactor;
 
 					//Update cumulative output for each dimension/channel.
-					for(int i=0; i<dim; i++){
-						channelSum[i] += input[(idx_y*W + idx_x)*dim + i]*spatialFactor*intensityFactor;
+					for(int k=0; k<dim; k++){
+						channelSum[k] += input[(idx_y*W + idx_x)*dim + k]*spatialFactor*intensityFactor;
 					}
 				}
 			}
 
 			//Normalise outputs.
-			if(normaliser > 10e-10){
+			if(normaliser > 0.0){
 				for(int i=0; i<dim; i++){
 					output[(y*W + x)*dim + i] = channelSum[i]/normaliser;
 				}

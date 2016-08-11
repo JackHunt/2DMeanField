@@ -1,0 +1,3 @@
+The images in this directory were taken from the code package for the paper "Efficient Inference in Fully Connected CRFs with Gaussian Edge Potentials", found at:-
+
+http://www.philkr.net/code
