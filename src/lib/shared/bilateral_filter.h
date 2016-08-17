@@ -1,16 +1,18 @@
 #ifndef MEANFIELD_SHARED_BILATERAL_FILTER_HEADER
 #define MEANFIELD_SHARED_BILATERAL_FILTER_HEADER
 
+#include "code_sharing.h"
 #include <cmath>
 
 namespace MeanField{
 	namespace Filtering{
+		__SHARED_CODE__
 		inline void applyBilateralKernel(const float *spatial_kernel, const float *intensity_kernel,
 										 const float *input, const unsigned char *rgb, float *output,
 										 float sd_spatial, float sd_intensity, int dim, int x, int y, int W, int H){
 			float normaliser = 0.0;
 			float spatialFactor, intensityFactor;
-			float channelSum[dim];
+			float *channelSum = new float[dim];
 			for(int i=0; i<dim; i++){
 				channelSum[i] = 0.0;
 			}
@@ -33,10 +35,10 @@ namespace MeanField{
 					idx_c = 3*(y*W + x);//Current pixel idx.
 					idx_n = 3*(idx_y*W + idx_x);//Neighbour idx.
 					
-					spatialFactor = spatial_kernel[(int)fabs(i)]*spatial_kernel[(int)fabs(j)];
-					intensityFactor = intensity_kernel[(int)fabs(rgb[idx_n] - rgb[idx_c])]*//R
-						intensity_kernel[(int)fabs(rgb[idx_n + 1] - rgb[idx_c + 1])]*//G
-						intensity_kernel[(int)fabs(rgb[idx_n + 2] - rgb[idx_c + 2])];//B
+					spatialFactor = spatial_kernel[(int)fabs((float)i)]*spatial_kernel[(int)fabs((float)j)];
+					intensityFactor = intensity_kernel[(int)fabs((float)rgb[idx_n] - (float)rgb[idx_c])]*//R
+						intensity_kernel[(int)fabs((float)rgb[idx_n + 1] - (float)rgb[idx_c + 1])]*//G
+						intensity_kernel[(int)fabs((float)rgb[idx_n + 2] - (float)rgb[idx_c + 2])];//B
 					
 					normaliser += spatialFactor*intensityFactor;
 
@@ -53,6 +55,7 @@ namespace MeanField{
 					output[(y*W + x)*dim + i] = channelSum[i]/normaliser;
 				}
 			}
+			delete[] channelSum;
 		}
 	}
 }

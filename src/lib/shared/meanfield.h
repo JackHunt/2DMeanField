@@ -1,17 +1,20 @@
 #ifndef MEANFIELD_SHARED_HEADER
 #define MEANFIELD_SHARED_HEADER
 
+#include "code_sharing.h"
 #include "gaussian_filter.h"
 #include "bilateral_filter.h"
 
 namespace MeanField{
+	__SHARED_CODE__
 	inline void weightAndAggregateIndividual(const float *spatialOut, const float *bilateralOut, float *out,
 											 float spatialWeight, float bilateralWeight, int idx){
 		out[idx] = spatialWeight*spatialOut[idx] + bilateralWeight*bilateralOut[idx];
 	}
 
+	__SHARED_CODE__
 	inline void applyCompatabilityTransformIndividual(const float *potts, float *out, int idx, int dim){
-		float perDimSum[dim];
+		float *perDimSum = new float[dim];
 		for(int i=0; i<dim; i++){
 			perDimSum[i] = 0.0;
 		}
@@ -25,8 +28,10 @@ namespace MeanField{
 		for(int i=0; i<dim; i++){
 			out[idx*dim + i] = perDimSum[i];
 		}
+		delete[] perDimSum;
 	}
 
+	__SHARED_CODE__
 	inline void applySoftmaxIndividual(const float *QDistribution, float *out, int idx, int dimensions){
 		float normaliser = 0.0;
 		int localIdx;

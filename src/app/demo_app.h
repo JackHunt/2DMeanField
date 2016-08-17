@@ -8,7 +8,8 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
-#include "../lib/2DMEanField.h"
+#include "../lib/2DMeanField.h"
+#include "../lib/CUDA/cuda_util.h"
 
 namespace MeanFieldDemo{
 	int noColours = 0;

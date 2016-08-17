@@ -2,6 +2,7 @@ set(SHARED_HEADERS
   shared/meanfield.h
   shared/bilateral_filter.h
   shared/gaussian_filter.h
+  shared/code_sharing.h
 )
 
 set(CPU_HEADERS
@@ -20,8 +21,5 @@ set(CUDA_SOURCES
   CUDA/meanfield_cuda.cu
 )
 
-add_library(2DMeanFieldLib_CPU OBJECT ${SHARED_HEADERS} ${CPU_HEADERS} ${CPU_SOURCES})
-
-add_library(${PROJECT_NAME} SHARED 
-  $<TARGET_OBJECTS:2DMeanFieldLib_CPU>
-)
+#add_library(2DMeanField SHARED ${SHARED_HEADERS} ${CPU_HEADERS} ${CPU_SOURCES})
+cuda_add_library(2DMeanField ${SHARED_HEADERS} ${CUDA_HEADERS} ${CUDA_SOURCES} ${CPU_HEADERS} ${CPU_SOURCES})
