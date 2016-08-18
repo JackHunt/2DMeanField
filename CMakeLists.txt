@@ -14,6 +14,7 @@ endif(MSVC_IDE)
 find_package(OpenCV REQUIRED)
 
 find_package(CUDA REQUIRED)
+include_directories(${CUDA_INCLUDE_DIRS})
 
 #Add shared library.
 add_subdirectory(src/lib)

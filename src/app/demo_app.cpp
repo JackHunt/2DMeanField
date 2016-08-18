@@ -1,4 +1,4 @@
-#import "demo_app.h"
+#include "demo_app.h"
 
 /*
  *Much of the code in this file is derived from http://www.philkr.net/code from the code
@@ -112,8 +112,8 @@ int main(int argc, char* argv[]){
 	//Copy to GPU.
 	unsigned char *rgb_device;
 	float *unaries_device;
-	cudaMalloc((void**)rgb_device, rgbImage.rows*rgbImage.cols*3*sizeof(unsigned char));
-	cudaMalloc((void**)unaries_device, rgbImage.rows*rgbImage.cols*M*sizeof(float));
+	cudaMalloc((void**)&rgb_device, rgbImage.rows*rgbImage.cols*3*sizeof(unsigned char));
+	cudaMalloc((void**)&unaries_device, rgbImage.rows*rgbImage.cols*M*sizeof(float));
 	cudaMemcpy(rgb_device, rgbImage.data, rgbImage.rows*rgbImage.cols*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 	cudaMemcpy(unaries_device, unaries, rgbImage.rows*rgbImage.cols*M*sizeof(float), cudaMemcpyHostToDevice);
 

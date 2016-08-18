@@ -70,19 +70,19 @@ CRF::~CRF(){
 }
 			
 void CRF::runInference(const unsigned char *image, const float *unaries, int iterations){
-	runInferenceIteration(image, unaries);
+        runInferenceIteration(image, unaries);
 	for(int i=0; i<iterations-1; i++){
-		runInferenceIteration(image, (&QDistribution[0]).get());
+	  runInferenceIteration(image, (&QDistribution[0]).get());
 	}
 }
 
 void CRF::runInferenceIteration(const unsigned char *image, const float *unaries){
-	filterGaussian(unaries);
-	filterBilateral(unaries, image);
-	weightAndAggregate();
-	applyCompatabilityTransform();
-	subtractQDistribution(unaries, (&aggregatedFilters[0]).get(), (&QDistributionTmp[0]).get());
-	applySoftmax((&QDistributionTmp[0]).get(), (&QDistribution[0]).get());
+  	filterGaussian(unaries);
+  	filterBilateral(unaries, image);
+  	weightAndAggregate();
+  	applyCompatabilityTransform();
+  	subtractQDistribution(unaries, (&aggregatedFilters[0]).get(), (&QDistributionTmp[0]).get());
+  	applySoftmax((&QDistributionTmp[0]).get(), (&QDistribution[0]).get());
 }
 
 void CRF::setSpatialWeight(float weight){
