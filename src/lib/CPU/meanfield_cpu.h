@@ -50,6 +50,20 @@ namespace MeanField{
 			void applySoftmax(const float *QDist, float *out);
 			
 		public:
+			/**
+			 * \brief Constructs a new CRF with the given configuration.
+			 * As this is a CPU implementation, all pointers provided to member functions must point to
+			 * the CPU memory space.
+			 *
+			 * All pointers returned from member functions shall point to CPU memory space.
+			 *
+			 * @param width Width of the input image.
+			 * @param height Height of the input image.
+			 * @param dimensions Number of classes.
+			 * @param spatial_sd Standard deviation for spatial filtering for message passing.
+			 * @param bilateral_spatial_sd Standard deviation for spatial component of bilateral filtering for message passing.
+			 * @param bilateral_intensity_sdStandard deviation for intensity component of bilateral filtering for message passing.
+			 */
 			CRF(int width, int height, int dimensions, float spatial_sd,
 				float bilateral_spatial_sd, float bilateral_intensity_sd);
 			~CRF();

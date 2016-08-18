@@ -26,6 +26,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CODE_SHARING_H_
 #define CODE_SHARING_H_
 
+/*
+ * If CUDA is present, define __SHARED_CODE__ macro to indicate a device function.
+ */
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
 #define __SHARED_CODE__ __device__
 #else

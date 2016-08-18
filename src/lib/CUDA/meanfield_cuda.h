@@ -35,23 +35,87 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cuda_util.h"
 #include "../shared/meanfield.h"
 
+/**
+ * \brief CUDA kernel to apply gaussian filter.
+ *
+ * @param kernel Gaussian kernel to be applied.
+ * @param input Input distribution tensor/
+ * @param output Output buffer to write to.
+ * @param sd Standard deviation of the filter.
+ * @param dim Third dimension of the tensor.
+ * @param W Second dimension of the tensor.
+ * @param H First dimension of the tensor.
+ */
 __global__
 void filterGaussian_device(const float *kernel, const float *input, float *output, float sd, int dim, int W, int H);
 
+/**
+ * \brief CUDA kernel to apply bilateral filter.
+ *
+ * @param spatialKernel Gaussian kernel to be applied for spatial component.
+ * @param intensityKernel Gaussian kernel to be applied for intensity component.
+ * @param input Input distribution tensor.
+ * @param rgb RGB image used for intensity filtering.
+ * @param output Output buffer to write to.
+ * @param spatialSD Standard deviation of spatial kernel.
+ * @param intensitySD Standard deviation of intensity kernel.
+ * @param dim Third dimension of the tensor.
+ * @param W Second dimension of the tensor.
+ * @param H First dimension of the tensor.
+ */
 __global__
 void filterBilateral_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
 		float *output, float spatialSD, float intensitySD, int dim, int W, int H);
 
+/**
+ * \brief CUDA kernel to weight and aggregate the outputs of the spatial and bilateral filters.
+ *
+ * @param spatialOut Output of the spatial filter.
+ * @param bilateralOut Output of the bilateral filter.
+ * @param out Output buffer to write to.
+ * @param spatialWeight Scalar weight for the spatial filter.
+ * @param bilateralWeight Scalar weight for the bilateral filter.
+ * @param dim Third dimension of the tensor.
+ * @param W Second dimension of the tensor.
+ * @param H First dimension of the tensor.
+ */
 __global__
 void weightAndAggregate_device(const float *spatialOut, const float *bilateralOut, float *out, float spatialWeight, float bilateralWeight,
 		int dim, int W, int H);
 
+/**
+ * \brief CUDA kernel to apply Potts Model compatability transform.
+ * Transform applied in place.
+ *
+ * @param pottsModel Potts Model to be applied.
+ * @param input Input distribution tensor.
+ * @param dim Third dimension of the tensor.
+ * @param W Second dimension of the tensor.
+ * @param H First dimension of the tensor.
+ */
 __global__
 void applyCompatabilityTransform_device(const float *pottsModel, float *input, int dim, int W, int H);
 
+/**
+ * \brief CUDA kernel to subtract one tensor from another. Typically Q distribution from unary potentials.
+ *
+ * @param unaries Input unary potentials.
+ * @param QDist Input Q distribution/
+ * @param out Output buffer to write to.
+ * @param N Total number of elements in the tensor(s).
+ */
 __global__
 void subtractQDistribution_device(const float *unaries, const float *QDist, float *out, int N);
 
+/**
+ * \brief CUDA kernel to apply Softmax function to a distribution tensor.
+ *
+ * @param input Input distribution tensor.
+ * @param output Output to write to.
+ * @param dim Third dimension of the tensor.
+ * @param W Second dimension of the tensor.
+ * @param H First dimension of the tensor.
+ */
 __global__
 void applySoftmax_device(const float *input, float *output, int dim, int W, int H);
 
@@ -76,6 +140,20 @@ namespace MeanField{
 			void applySoftmax(const float *QDist, float *out);
 			
 		public:
+			/**
+			 * \brief Constructs a new CRF with the given configuration.
+			 * As this is a GPU implementation, all pointers provided to member functions must point to
+			 * the GPU memory space.
+			 *
+			 * All pointers returned from member functions shall point to GPU memory space.
+			 *
+			 * @param width Width of the input image.
+			 * @param height Height of the input image.
+			 * @param dimensions Number of classes.
+			 * @param spatial_sd Standard deviation for spatial filtering for message passing.
+			 * @param bilateral_spatial_sd Standard deviation for spatial component of bilateral filtering for message passing.
+			 * @param bilateral_intensity_sdStandard deviation for intensity component of bilateral filtering for message passing.
+			 */
 			CRF(int width, int height, int dimensions, float spatial_sd,
 				float bilateral_spatial_sd, float bilateral_intensity_sd);
 			~CRF();

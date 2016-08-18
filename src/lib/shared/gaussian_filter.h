@@ -31,6 +31,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace MeanField{
 	namespace Filtering{
+		/**
+		 * \brief Generates a 1 dimensional Gaussian kernel with a given standard deviation and size.
+		 *
+		 * @param out Output location to write the kernel to.
+		 * @param dim Size of the kernel.
+		 * @param sd Standard deviation of the kernel.
+		 */
 		inline void generateGaussianKernel(float *out, int dim, float sd){
 			int rad = dim/2;
 			float x;
@@ -40,6 +47,20 @@ namespace MeanField{
 			}
 		}
 
+		/**
+		 * \brief Applies a gaussian kernel to an input tensor.
+		 * Applies filter along each slice defined by the plane given by the tensors first and second dimensions.
+		 *
+		 * @param kernel Kernel to be applied.
+		 * @param input Input tensor.
+		 * @param output Output buffer.
+		 * @param sd Standard deviation of the given kernel.
+		 * @param dim Third dimension of the tensor.
+		 * @param x x location in the plane given by the first and second dimensions.
+		 * @param y y location in the plane given by the first and second dimensions.
+		 * @param W Second dimension of the tensor.
+		 * @param H First dimension of the tensor.
+		 */
 		__SHARED_CODE__
 		inline void applyGaussianKernel(const float *kernel, const float *input, float *output,
 										float sd, int dim, int x, int y, int W, int H){

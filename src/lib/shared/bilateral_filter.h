@@ -31,6 +31,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace MeanField{
 	namespace Filtering{
+	/**
+	 * \brief Applies a gaussian kernel to an input tensor.
+	 * Applies filter along each slice defined by the plane given by the tensors first and second dimensions.
+	 *
+	 * @param spatial_kernel Gaussian kernel to be applied for spatial factor.
+	 * @param intensity_kernel Gaussian kernel to be applied for intensity factor.
+	 * @param input Input tensor.
+	 * @param rgb Input RGB image for intensity filtering.
+	 * @param output Output buffer.
+	 * @param sd_spatial Standard deviation of the given spatial kernel.
+	 * @param sd_intensity Standard deviation of the given intensity kernel.
+	 * @param dim Third dimension of the tensor.
+	 * @param x x location in the plane given by the first and second dimensions.
+	 * @param y y location in the plane given by the first and second dimensions.
+	 * @param W Second dimension of the tensor.
+	 * @param H First dimension of the tensor.
+	 */
 		__SHARED_CODE__
 		inline void applyBilateralKernel(const float *spatial_kernel, const float *intensity_kernel,
 										 const float *input, const unsigned char *rgb, float *output,
