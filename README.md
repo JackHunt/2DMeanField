@@ -1,4 +1,5 @@
 # 2DMeanField
+Variational Mean Field Inference for image segmentation.
 
 ## Overview
 This repository contains an implementation of the Variational Mean Field Inference algorithm for image segmentation. This implementation is utilising the contributions of the paper entitled "Efficient Inference in Fully Connected CRFs with
