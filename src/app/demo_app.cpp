@@ -118,7 +118,7 @@ int main(int argc, char* argv[]){
 	cudaMemcpy(unaries_device, unaries, rgbImage.rows*rgbImage.cols*M*sizeof(float), cudaMemcpyHostToDevice);
 
 	//Create a new CRF and perform Mean Field Inference.
-	MeanField::CUDA::CRF crf(annotImage.cols, annotImage.rows, M, 10.0, 30.0, 15.0);
+        MeanField::CUDA::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
 	crf.setSpatialWeight(5.0);
 	crf.setBilateralWeight(10.0);
 	crf.runInference(rgb_device, unaries_device, 5);
