@@ -31,176 +31,176 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bilateral_filter.h"
 
 namespace MeanField{
-	/**
-	 * \brief Applies weights to filter outputs and aggregates them.
-	 *
-	 * @param spatialOut Spatial filter output.
-	 * @param bilateralOut Bilateral filter output.
-	 * @param out Output buffer for weighted and aggregated filters.
-	 * @param spatialWeight Scalar weight for spatial filter output.
-	 * @param bilateralWeight Scalar weight for bilateral filter output.
-	 * @param idx Linear index for tensor component.
-	 */
-	__SHARED_CODE__
-	inline void weightAndAggregateIndividual(const float *spatialOut, const float *bilateralOut, float *out,
-											 float spatialWeight, float bilateralWeight, int idx){
-		out[idx] = spatialWeight*spatialOut[idx] + bilateralWeight*bilateralOut[idx];
-	}
+/**
+     * \brief Applies weights to filter outputs and aggregates them.
+     *
+     * @param spatialOut Spatial filter output.
+     * @param bilateralOut Bilateral filter output.
+     * @param out Output buffer for weighted and aggregated filters.
+     * @param spatialWeight Scalar weight for spatial filter output.
+     * @param bilateralWeight Scalar weight for bilateral filter output.
+     * @param idx Linear index for tensor component.
+     */
+__SHARED_CODE__
+inline void weightAndAggregateIndividual(const float *spatialOut, const float *bilateralOut, float *out,
+                                         float spatialWeight, float bilateralWeight, int idx){
+    out[idx] = spatialWeight*spatialOut[idx] + bilateralWeight*bilateralOut[idx];
+}
 
-	/**
-	 * \brief Applies the Potts Model compatability transform to a tensor along the third dimension.
-	 *
-	 * @param potts Potts model to be applied.
-	 * @param out Output buffer to write transformed tensor.
-	 * @param idx Linear index for slice of tensor.
-	 * @param dim Third dimension of the tensor.
-	 */
-	__SHARED_CODE__
-	inline void applyCompatabilityTransformIndividual(const float *potts, float *out, int idx, int dim){
-		float *perDimSum = new float[dim];
-		for(int i=0; i<dim; i++){
-			perDimSum[i] = 0.0;
-		}
-		
-		for(int i=0; i<dim; i++){
-			for(int j=0; j<dim; j++){
-				perDimSum[i] += out[idx*dim + j]*potts[i*dim + j];
-			}
-		}
+/**
+     * \brief Applies the Potts Model compatability transform to a tensor along the third dimension.
+     *
+     * @param potts Potts model to be applied.
+     * @param out Output buffer to write transformed tensor.
+     * @param idx Linear index for slice of tensor.
+     * @param dim Third dimension of the tensor.
+     */
+__SHARED_CODE__
+inline void applyCompatabilityTransformIndividual(const float *potts, float *out, int idx, int dim){
+    float *perDimSum = new float[dim];
+    for(int i=0; i<dim; i++){
+        perDimSum[i] = 0.0;
+    }
 
-		for(int i=0; i<dim; i++){
-			out[idx*dim + i] = perDimSum[i];
-		}
-		delete[] perDimSum;
-	}
+    for(int i=0; i<dim; i++){
+        for(int j=0; j<dim; j++){
+            perDimSum[i] += out[idx*dim + j]*potts[i*dim + j];
+        }
+    }
 
-	/**
-	 * \brief Applies the softmax function to the third dimension of a tensor.
-	 *
-	 * @param QDistribution Input distribution tensor.
-	 * @param out Output buffer to write transformed distribution.
-	 * @param idx Linear index for tensor slice.
-	 * @param dimensions Third dimension of the tensor.
-	 */
-	__SHARED_CODE__
-	inline void applySoftmaxIndividual(const float *QDistribution, float *out, int idx, int dimensions){
-		float normaliser = 0.0;
-		int localIdx;
-		for(int i=0; i<dimensions; i++){
-			localIdx = idx*dimensions + i;
-			out[localIdx] = expf(QDistribution[localIdx]);
-			normaliser += out[localIdx];
-		}
+    for(int i=0; i<dim; i++){
+        out[idx*dim + i] = perDimSum[i];
+    }
+    delete[] perDimSum;
+}
 
-		for(int i=0; i<dimensions; i++){
-			out[idx*dimensions + i] /= normaliser;
-		}
-	}
-	
-	/**
-	 * \brief Base CRF interface.
-	 */
-	class CRF{
-	protected:
-		static const int KERNEL_SIZE = 256;
+/**
+     * \brief Applies the softmax function to the third dimension of a tensor.
+     *
+     * @param QDistribution Input distribution tensor.
+     * @param out Output buffer to write transformed distribution.
+     * @param idx Linear index for tensor slice.
+     * @param dimensions Third dimension of the tensor.
+     */
+__SHARED_CODE__
+inline void applySoftmaxIndividual(const float *QDistribution, float *out, int idx, int dimensions){
+    float normaliser = 0.0;
+    int localIdx;
+    for(int i=0; i<dimensions; i++){
+        localIdx = idx*dimensions + i;
+        out[localIdx] = expf(QDistribution[localIdx]);
+        normaliser += out[localIdx];
+    }
 
-		/**
-		 * \brief Applies a gaussian filter along each slice of the third dimension of the input
-		 * \brief distribution tensor.
-		 * Used for message passing.
-		 * Output stored in internal buffer.
-		 *
-		 * @param unaries Input distribution tensor.
-		 */
-		virtual void filterGaussian(const float *unaries) = 0;
+    for(int i=0; i<dimensions; i++){
+        out[idx*dimensions + i] /= normaliser;
+    }
+}
 
-		/**
-		 * \brief Applies a bilateral filter along each slice of the third dimension of the input
-		 * \brief distribution tensor.
-		 * Used for message passing.
-		 * Output stored in internal buffer.
-		 *
-		 * @param unaries Input distribution tensor.
-		 * @param image RGB image used for intensity term in filter.
-		 */
-		virtual void filterBilateral(const float *unaries, const unsigned char *image) = 0;
+/**
+     * \brief Base CRF interface.
+     */
+class CRF{
+protected:
+    static const int KERNEL_SIZE = 256;
 
-		/**
-		 * \brief Takes the outputs of the gaussian and bilateral filters, weights and aggregates them.
-		 * Output stored in internal buffer.
-		 */
-		virtual void weightAndAggregate() = 0;
+    /**
+         * \brief Applies a gaussian filter along each slice of the third dimension of the input
+         * \brief distribution tensor.
+         * Used for message passing.
+         * Output stored in internal buffer.
+         *
+         * @param unaries Input distribution tensor.
+         */
+    virtual void filterGaussian(const float *unaries) = 0;
 
-		/**
-		 * \brief Applies the Potts Model compatability transform to the aggregated filter outputs.
-		 * Transform is applied in place.
-		 */
-		virtual void applyCompatabilityTransform() = 0;
+    /**
+         * \brief Applies a bilateral filter along each slice of the third dimension of the input
+         * \brief distribution tensor.
+         * Used for message passing.
+         * Output stored in internal buffer.
+         *
+         * @param unaries Input distribution tensor.
+         * @param image RGB image used for intensity term in filter.
+         */
+    virtual void filterBilateral(const float *unaries, const unsigned char *image) = 0;
 
-		/**
-		 * \brief Subtracts the current Q distribution from the input unaries.
-		 *
-		 * @param unaries Input unaries.
-		 * @param QDist Current Q distribution.
-		 * @param out Output buffer to write output.
-		 */
-		virtual void subtractQDistribution(const float *unaries, const float *QDist, float *out) = 0;
+    /**
+         * \brief Takes the outputs of the gaussian and bilateral filters, weights and aggregates them.
+         * Output stored in internal buffer.
+         */
+    virtual void weightAndAggregate() = 0;
 
-		/**
-		 * \brief Applies the Softmax function to the current distribution tensor.
-		 * Applies softmax along the third dimension of the tensor for each point in the plane of the
-		 * first and second dimension.
-		 *
-		 * @param QDist Current Q distribution.
-		 * @param out Output to write to.
-		 */
-		virtual void applySoftmax(const float *QDist, float *out) = 0;
-		
-	public:
-		/**
-		 * \brief Runs inference for a given number of iterations.
-		 *
-		 * @param image Input RGB image.
-		 * @param unaries Input unary potentials.
-		 * @param iterations Number of iterations to run for.
-		 */
-		virtual void runInference(const unsigned char *image, const float *unaries, int iterations) = 0;
+    /**
+         * \brief Applies the Potts Model compatability transform to the aggregated filter outputs.
+         * Transform is applied in place.
+         */
+    virtual void applyCompatabilityTransform() = 0;
 
-		/**
-		 * \brief Run a single Mean Field iteration.
-		 *
-		 * @param image Input RGB Image.
-		 * @param unaries Input unary potentials.
-		 */
-		virtual void runInferenceIteration(const unsigned char *image, const float *unaries) = 0;
+    /**
+         * \brief Subtracts the current Q distribution from the input unaries.
+         *
+         * @param unaries Input unaries.
+         * @param QDist Current Q distribution.
+         * @param out Output buffer to write output.
+         */
+    virtual void subtractQDistribution(const float *unaries, const float *QDist, float *out) = 0;
 
-		/**
-		 * \brief Sets the spatial weight to be used in the aggregation stage.
-		 *
-		 * @param weight Scalar weight value.
-		 */
-		virtual void setSpatialWeight(float weight) = 0;
+    /**
+         * \brief Applies the Softmax function to the current distribution tensor.
+         * Applies softmax along the third dimension of the tensor for each point in the plane of the
+         * first and second dimension.
+         *
+         * @param QDist Current Q distribution.
+         * @param out Output to write to.
+         */
+    virtual void applySoftmax(const float *QDist, float *out) = 0;
 
-		/**
-		 * \brief Sets the bilateral weight to be used in the aggregation stage.
-		 *
-		 * @param weight Scalar weight value.
-		 */
-		virtual void setBilateralWeight(float weight) = 0;
+public:
+    /**
+         * \brief Runs inference for a given number of iterations.
+         *
+         * @param image Input RGB image.
+         * @param unaries Input unary potentials.
+         * @param iterations Number of iterations to run for.
+         */
+    virtual void runInference(const unsigned char *image, const float *unaries, int iterations) = 0;
 
-		/**
-		 * \brief Reset internal buffers/
-		 */
-		virtual void reset() = 0;
+    /**
+         * \brief Run a single Mean Field iteration.
+         *
+         * @param image Input RGB Image.
+         * @param unaries Input unary potentials.
+         */
+    virtual void runInferenceIteration(const unsigned char *image, const float *unaries) = 0;
 
-		/**
-		 * \brief Return pointer to the current Q distribution.
-		 *
-		 * @return Q distribution pointer.
-		 */
-		virtual float *getQ() = 0;
-		virtual ~CRF(){}
-	};
+    /**
+         * \brief Sets the spatial weight to be used in the aggregation stage.
+         *
+         * @param weight Scalar weight value.
+         */
+    virtual void setSpatialWeight(float weight) = 0;
+
+    /**
+         * \brief Sets the bilateral weight to be used in the aggregation stage.
+         *
+         * @param weight Scalar weight value.
+         */
+    virtual void setBilateralWeight(float weight) = 0;
+
+    /**
+         * \brief Reset internal buffers/
+         */
+    virtual void reset() = 0;
+
+    /**
+         * \brief Return pointer to the current Q distribution.
+         *
+         * @return Q distribution pointer.
+         */
+    virtual const float *getQ() = 0;
+    virtual ~CRF(){}
+};
 }
 
 #endif

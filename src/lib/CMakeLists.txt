@@ -7,10 +7,12 @@ set(SHARED_HEADERS
 
 set(CPU_HEADERS
   CPU/meanfield_cpu.h
+  CPU/filtering_cpu.h
 )
 
 set(CPU_SOURCES
   CPU/meanfield_cpu.cpp
+  CPU/filtering_cpu.cpp
 )
 
 set(CUDA_HEADERS

@@ -30,80 +30,80 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 
 namespace MeanField{
-	namespace Filtering{
-		/**
-		 * \brief Generates a 1 dimensional Gaussian kernel with a given standard deviation and size.
-		 *
-		 * @param out Output location to write the kernel to.
-		 * @param dim Size of the kernel.
-		 * @param sd Standard deviation of the kernel.
-		 */
-		inline void generateGaussianKernel(float *out, int dim, float sd){
-			int rad = dim/2;
-			float x;
-			for(int i=0; i<dim; i++){
-				x = i-rad;
-				out[i] = expf(-(i*i) / (2.0*sd*sd));
-			}
-		}
+namespace Filtering{
+/**
+         * \brief Generates a 1 dimensional Gaussian kernel with a given standard deviation and size.
+         *
+         * @param out Output location to write the kernel to.
+         * @param dim Size of the kernel.
+         * @param sd Standard deviation of the kernel.
+         */
+inline void generateGaussianKernel(float *out, int dim, float sd){
+    int rad = dim/2;
+    float x;
+    for(int i=0; i<dim; i++){
+        x = i-rad;
+        out[i] = expf(-(i*i) / (2.0*sd*sd));
+    }
+}
 
-		/**
-		 * \brief Applies a gaussian kernel to an input tensor.
-		 * Applies filter along each slice defined by the plane given by the tensors first and second dimensions.
-		 *
-		 * @param kernel Kernel to be applied.
-		 * @param input Input tensor.
-		 * @param output Output buffer.
-		 * @param sd Standard deviation of the given kernel.
-		 * @param dim Third dimension of the tensor.
-		 * @param x x location in the plane given by the first and second dimensions.
-		 * @param y y location in the plane given by the first and second dimensions.
-		 * @param W Second dimension of the tensor.
-		 * @param H First dimension of the tensor.
-		 */
-		__SHARED_CODE__
-		inline void applyGaussianKernel(const float *kernel, const float *input, float *output,
-										float sd, int dim, int x, int y, int W, int H){
-			float normaliser = 0.0;
-			float factor;
-			float *channelSum = new float[dim];
-			for(int i=0; i<dim; i++){
-				channelSum[i] = 0.0;
-			}
+/**
+         * \brief Applies a gaussian kernel to an input tensor.
+         * Applies filter along each slice defined by the plane given by the tensors first and second dimensions.
+         *
+         * @param kernel Kernel to be applied.
+         * @param input Input tensor.
+         * @param output Output buffer.
+         * @param sd Standard deviation of the given kernel.
+         * @param dim Third dimension of the tensor.
+         * @param x x location in the plane given by the first and second dimensions.
+         * @param y y location in the plane given by the first and second dimensions.
+         * @param W Second dimension of the tensor.
+         * @param H First dimension of the tensor.
+         */
+__SHARED_CODE__
+inline void applyGaussianKernel(const float *kernel, const float *input, float *output,
+                                float sd, int dim, int x, int y, int W, int H){
+    float normaliser = 0.0;
+    float factor;
+    float *channelSum = new float[dim];
+    for(int i=0; i<dim; i++){
+        channelSum[i] = 0.0;
+    }
 
-			int sd_int = (int)sd;
-			int idx_x, idx_y;
-			//Convolve for each channel.
-			for(int i=-sd_int; i<sd_int; i++){
-				idx_y = y+i;
-				if(idx_y < 0 || idx_y >= H){
-					continue;
-				}
-				
-				for(int j=-sd_int; j<sd_int; j++){
-					idx_x = x+j;
-					if(idx_x < 0 || idx_x >= W){
-						continue;
-					}
-					factor = kernel[(int)fabs((float)i)]*kernel[(int)fabs((float)j)];
-					normaliser += factor;
+    int sd_int = (int)sd;
+    int idx_x, idx_y;
+    //Convolve for each channel.
+    for(int i=-sd_int; i<sd_int; i++){
+        idx_y = y+i;
+        if(idx_y < 0 || idx_y >= H){
+            continue;
+        }
 
-					//Update cumulative output for each dimension/channel.
-					for(int k=0; k<dim; k++){
-						channelSum[k] += input[(idx_y*W + idx_x)*dim + k]*factor;
-					}
-				}
-			}
+        for(int j=-sd_int; j<sd_int; j++){
+            idx_x = x+j;
+            if(idx_x < 0 || idx_x >= W){
+                continue;
+            }
+            factor = kernel[(int)fabs((float)i)]*kernel[(int)fabs((float)j)];
+            normaliser += factor;
 
-			//Normalise outputs.
-			if(normaliser > 0.0){
-				for(int i=0; i<dim; i++){
-					output[(y*W + x)*dim + i] = channelSum[i]/normaliser;
-				}
-			}
-			delete[] channelSum;
-		}
-	}
+            //Update cumulative output for each dimension/channel.
+            for(int k=0; k<dim; k++){
+                channelSum[k] += input[(idx_y*W + idx_x)*dim + k]*factor;
+            }
+        }
+    }
+
+    //Normalise outputs.
+    if(normaliser > 0.0){
+        for(int i=0; i<dim; i++){
+            output[(y*W + x)*dim + i] = channelSum[i]/normaliser;
+        }
+    }
+    delete[] channelSum;
+}
+}
 }
 
 #endif

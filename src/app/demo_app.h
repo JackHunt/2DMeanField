@@ -14,9 +14,9 @@
 #endif
 
 namespace MeanFieldDemo{
-	int noColours = 0;
-	int colourMap[255] = {0};
-	const int M = 3;
+int noColours = 0;
+int colourMap[255] = {0};
+const int M = 3;
 }
 
 #endif
