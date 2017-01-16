@@ -110,27 +110,43 @@ int main(int argc, char* argv[]){
 	unariesFromLabelling(annotLabelling, unaries, annotImage.cols, annotImage.rows, M);
 
 	//Copy to GPU.
+#ifdef WITH_CUDA
 	unsigned char *rgb_device;
 	float *unaries_device;
 	cudaMalloc((void**)&rgb_device, rgbImage.rows*rgbImage.cols*3*sizeof(unsigned char));
 	cudaMalloc((void**)&unaries_device, rgbImage.rows*rgbImage.cols*M*sizeof(float));
 	cudaMemcpy(rgb_device, rgbImage.data, rgbImage.rows*rgbImage.cols*3*sizeof(unsigned char), cudaMemcpyHostToDevice);
 	cudaMemcpy(unaries_device, unaries, rgbImage.rows*rgbImage.cols*M*sizeof(float), cudaMemcpyHostToDevice);
+#endif
 
 	//Create a new CRF and perform Mean Field Inference.
-        MeanField::CUDA::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
+#ifdef WITH_CUDA
+    MeanField::CUDA::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
+#else
+    MeanField::CPU::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
+#endif
 	crf.setSpatialWeight(5.0);
 	crf.setBilateralWeight(10.0);
+#ifdef WITH_CUDA
 	crf.runInference(rgb_device, unaries_device, 5);
+#else
+    crf.runInference(rgbImage.data, unaries, 5);
+#endif
 
 	//Free device memory.
+#ifdef WITH_CUDA
 	cudaFree(rgb_device);
 	cudaFree(unaries_device);
+#endif
 
 	//Get updated labelling from MAP estimate.
 	float *outputUnaries = new float[rgbImage.rows*rgbImage.cols*M];
-	float *outputUnaries_device = crf.getQ();
+	float *outputUnariesPtr = crf.getQ();
+#ifdef WITH_CUDA
 	cudaMemcpy(outputUnaries, outputUnaries_device, rgbImage.rows*rgbImage.cols*M*sizeof(float), cudaMemcpyDeviceToHost);
+#else
+    memcpy(outputUnaries, outputUnariesPtr, rgbImage.rows*rgbImage.cols*M*sizeof(float));
+#endif
 	labellingFromUnaries(outputUnaries, outputLabelling, annotImage.cols, annotImage.rows, M);
 
 	//Build output image.

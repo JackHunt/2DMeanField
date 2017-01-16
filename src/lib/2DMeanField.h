@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEANFIELD_TOP_LEVEL_HEADER
 
 #include "CPU/meanfield_cpu.h"
+#ifdef WITH_CUDA
 #include "CUDA/meanfield_cuda.h"
+#endif
 
 #endif

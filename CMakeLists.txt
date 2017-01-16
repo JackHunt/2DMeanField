@@ -13,8 +13,12 @@ endif(MSVC_IDE)
 
 find_package(OpenCV REQUIRED)
 
-find_package(CUDA REQUIRED)
-include_directories(${CUDA_INCLUDE_DIRS})
+find_package(CUDA)
+if(CUDA_FOUND)
+  include_directories(${CUDA_INCLUDE_DIRS})
+  set(WITH_CUDA TRUE)
+  add_definitions(-DWITH_CUDA)
+endif()
 
 #Add shared library.
 add_subdirectory(src/lib)

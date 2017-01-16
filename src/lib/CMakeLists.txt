@@ -21,7 +21,8 @@ set(CUDA_SOURCES
   CUDA/meanfield_cuda.cu
 )
 
-#add_library(2DMeanField SHARED ${SHARED_HEADERS} ${CPU_HEADERS} ${CPU_SOURCES})
-cuda_add_library(2DMeanField ${SHARED_HEADERS} ${CUDA_HEADERS} ${CUDA_SOURCES} ${CPU_HEADERS} ${CPU_SOURCES})
-
-#add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:2DMeanFieldLib>)
+if(WITH_CUDA)
+  cuda_add_library(2DMeanField ${SHARED_HEADERS} ${CUDA_HEADERS} ${CUDA_SOURCES} ${CPU_HEADERS} ${CPU_SOURCES})
+else()
+  add_library(2DMeanField ${SHARED_HEADERS} ${CPU_HEADERS} ${CPU_SOURCES})
+endif()
