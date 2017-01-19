@@ -17,11 +17,17 @@ set(CPU_SOURCES
 
 set(CUDA_HEADERS
   CUDA/meanfield_cuda.h
+  CUDA/filtering_cuda.h
 )
 
 set(CUDA_SOURCES
   CUDA/meanfield_cuda.cu
+  CUDA/filtering_cuda.cu
 )
+
+source_group(CPU FILES ${CPU_HEADERS} ${CPU_SOURCES})
+source_group(CUDA FILES ${CUDA_HEADERS} ${CUDA_SOURCES})
+source_group(shared FILES ${SHARED_HEADERS})
 
 if(WITH_CUDA)
   cuda_add_library(2DMeanField ${SHARED_HEADERS} ${CUDA_HEADERS} ${CUDA_SOURCES} ${CPU_HEADERS} ${CPU_SOURCES})

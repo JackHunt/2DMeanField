@@ -4,13 +4,13 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
+	  notice, this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
+	  notice, this list of conditions and the following disclaimer in the
+	  documentation and/or other materials provided with the distribution.
  * Neither the name of Jack Miles Hunt nor the
-      names of contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
+	  names of contributors may be used to endorse or promote products
+	  derived from this software without specific prior written permission.
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,54 +30,54 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "filtering_cpu.h"
 #include <memory>
 
-namespace MeanField{
-namespace CPU{
-class CRF : public MeanField::CRF{
-private:
-    int width, height, dimensions;
-    float spatialSD, bilateralSpatialSD, bilateralIntensitySD;
-    float spatialWeight, bilateralWeight;
-    bool separable;
-    std::unique_ptr<float[]> QDistribution, QDistributionTmp;
-    std::unique_ptr<float[]> pottsModel;
-    std::unique_ptr<float[]> gaussianOut, bilateralOut, aggregatedFilters, filterOutTmp;
-    std::unique_ptr<float[]> spatialKernel, bilateralSpatialKernel, bilateralIntensityKernel;
+namespace MeanField {
+	namespace CPU {
+		class CRF : public MeanField::CRF {
+		private:
+			int width, height, dimensions;
+			float spatialSD, bilateralSpatialSD, bilateralIntensitySD;
+			float spatialWeight, bilateralWeight;
+			bool separable;
+			std::unique_ptr<float[]> QDistribution, QDistributionTmp;
+			std::unique_ptr<float[]> pottsModel;
+			std::unique_ptr<float[]> gaussianOut, bilateralOut, aggregatedFilters, filterOutTmp;
+			std::unique_ptr<float[]> spatialKernel, bilateralSpatialKernel, bilateralIntensityKernel;
 
-protected:
-    void filterGaussian(const float *unaries);
-    void filterBilateral(const float *unaries, const unsigned char *image);
-    void weightAndAggregate();
-    void applyCompatabilityTransform();
-    void subtractQDistribution(const float *unaries, const float *QDist, float *out);
-    void applySoftmax(const float *QDist, float *out);
+		protected:
+			void filterGaussian(const float *unaries);
+			void filterBilateral(const float *unaries, const unsigned char *image);
+			void weightAndAggregate();
+			void applyCompatabilityTransform();
+			void subtractQDistribution(const float *unaries, const float *QDist, float *out);
+			void applySoftmax(const float *QDist, float *out);
 
-public:
-    /**
-             * \brief Constructs a new CRF with the given configuration.
-             * As this is a CPU implementation, all pointers provided to member functions must point to
-             * the CPU memory space.
-             *
-             * All pointers returned from member functions shall point to CPU memory space.
-             *
-             * @param width Width of the input image.
-             * @param height Height of the input image.
-             * @param dimensions Number of classes.
-             * @param spatial_sd Standard deviation for spatial filtering for message passing.
-             * @param bilateral_spatial_sd Standard deviation for spatial component of bilateral filtering for message passing.
-             * @param bilateral_intensity_sdStandard deviation for intensity component of bilateral filtering for message passing.
-             */
-    CRF(int width, int height, int dimensions, float spatial_sd,
-        float bilateral_spatial_sd, float bilateral_intensity_sd, bool separable = true);
-    ~CRF();
+		public:
+			/**
+					 * \brief Constructs a new CRF with the given configuration.
+					 * As this is a CPU implementation, all pointers provided to member functions must point to
+					 * the CPU memory space.
+					 *
+					 * All pointers returned from member functions shall point to CPU memory space.
+					 *
+					 * @param width Width of the input image.
+					 * @param height Height of the input image.
+					 * @param dimensions Number of classes.
+					 * @param spatial_sd Standard deviation for spatial filtering for message passing.
+					 * @param bilateral_spatial_sd Standard deviation for spatial component of bilateral filtering for message passing.
+					 * @param bilateral_intensity_sdStandard deviation for intensity component of bilateral filtering for message passing.
+					 */
+			CRF(int width, int height, int dimensions, float spatial_sd,
+				float bilateral_spatial_sd, float bilateral_intensity_sd, bool separable = true);
+			~CRF();
 
-    void runInference(const unsigned char *image, const float *unaries, int iterations);
-    void runInferenceIteration(const unsigned char *image, const float *unaries);
-    void setSpatialWeight(float weight);
-    void setBilateralWeight(float weight);
-    void reset();
-    const float *getQ();
-};
-}
+			void runInference(const unsigned char *image, const float *unaries, int iterations);
+			void runInferenceIteration(const unsigned char *image, const float *unaries);
+			void setSpatialWeight(float weight);
+			void setBilateralWeight(float weight);
+			void reset();
+			const float *getQ();
+		};
+	}
 }
 
 #endif
