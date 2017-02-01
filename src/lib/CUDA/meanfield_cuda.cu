@@ -125,7 +125,6 @@ void CRF::filterGaussian(const float *unaries) {
 }
 
 void CRF::filterBilateral(const float *unaries, const unsigned char *image) {
-	/*
 	if (separable) {
 		BilateralFilterSeparable::applyXDirection(unaries, (&filterOutTmp[0]).get(), image, (&bilateralSpatialKernel[0]).get(),
 			(&bilateralIntensityKernel[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
@@ -140,7 +139,6 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image) {
 			unaries, image, (&bilateralOut[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
 	}
 	cudaDeviceSynchronize();
-	*/
 }
 
 void CRF::weightAndAggregate() {

@@ -103,35 +103,53 @@ const float *CRF::getQ() {
 }
 
 void CRF::filterGaussian(const float *unaries) {
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			if (separable) {
+	if (!separable) {
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				applyGaussianKernel(spatialKernel.get(), unaries, gaussianOut.get(), spatialSD, dimensions, j, i, width, height);
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				GaussianFilterSeparable::applyXDirection(unaries, filterOutTmp.get(), spatialKernel.get(), spatialSD,
 					dimensions, j, i, width, height);
+			}
+		}
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				GaussianFilterSeparable::applyYDirection(filterOutTmp.get(), gaussianOut.get(), spatialKernel.get(), spatialSD,
 					dimensions, j, i, width, height);
-			}
-			else {
-				applyGaussianKernel(spatialKernel.get(), unaries, gaussianOut.get(), spatialSD, dimensions, j, i, width, height);
 			}
 		}
 	}
 }
 
 void CRF::filterBilateral(const float *unaries, const unsigned char *image) {
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			if (separable) {
+	if (!separable) {
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				applyBilateralKernel(bilateralSpatialKernel.get(), bilateralIntensityKernel.get(), unaries,
+					image, bilateralOut.get(), bilateralSpatialSD, bilateralIntensitySD,
+					dimensions, j, i, width, height);
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				BilateralFilterSeparable::applyXDirection(unaries, filterOutTmp.get(), image, bilateralSpatialKernel.get(),
 					bilateralIntensityKernel.get(), bilateralSpatialSD, bilateralIntensitySD,
 					dimensions, j, i, width, height);
+			}
+		}
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				BilateralFilterSeparable::applyYDirection(filterOutTmp.get(), bilateralOut.get(), image, bilateralSpatialKernel.get(),
 					bilateralIntensityKernel.get(), bilateralSpatialSD, bilateralIntensitySD,
-					dimensions, j, i, width, height);
-			}
-			else {
-				applyBilateralKernel(bilateralSpatialKernel.get(), bilateralIntensityKernel.get(), unaries,
-					image, bilateralOut.get(), bilateralSpatialSD, bilateralIntensitySD,
 					dimensions, j, i, width, height);
 			}
 		}

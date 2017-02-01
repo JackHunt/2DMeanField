@@ -5,18 +5,18 @@
 #include "math.h"
 
 __global__
-void filterGaussianX_device(const float *input, float *output, const float *kernel, float sd, int dim, int W, int H, size_t sharedSize);
+void filterGaussianX_device(const float *input, float *output, const float *kernel, float sd, int dim, int W, int H);
 
 __global__
-void filterGaussianY_device(const float *input, float *output, const float *kernel, float sd, int dim, int W, int H, size_t sharedSize);
+void filterGaussianY_device(const float *input, float *output, const float *kernel, float sd, int dim, int W, int H);
 
 __global__
 void filterBilateralX_device(const float *input, float *output, const unsigned char *rgb, const float *spatialKernel,
-	const float *intensityKernel, float spatialSD, float intensitySD, int dim, int W, int H, size_t sharedSize);
+	const float *intensityKernel, float spatialSD, float intensitySD, int dim, int W, int H);
 
 __global__
 void filterBilateralY_device(const float *input, float *output, const unsigned char *rgb, const float *spatialKernel,
-	const float *intensityKernel, float spatialSD, float intensitySD, int dim, int W, int H, size_t sharedSize);
+	const float *intensityKernel, float spatialSD, float intensitySD, int dim, int W, int H);
 
 namespace MeanField {
 	namespace CUDA {
