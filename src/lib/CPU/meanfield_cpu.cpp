@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace MeanField::CPU;
 using namespace MeanField::Filtering;
-using namespace MeanField::CPU::Filtering;
 
 CRF::CRF(int width, int height, int dimensions, float spatialSD,
 	float bilateralSpatialSD, float bilateralIntensitySD, bool separable) :
@@ -113,14 +112,14 @@ void CRF::filterGaussian(const float *unaries) {
 	else {
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				GaussianFilterSeparable::applyXDirection(unaries, filterOutTmp.get(), spatialKernel.get(), spatialSD,
+				applyGaussianKernelX(unaries, filterOutTmp.get(), spatialKernel.get(), spatialSD,
 					dimensions, j, i, width, height);
 			}
 		}
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				GaussianFilterSeparable::applyYDirection(filterOutTmp.get(), gaussianOut.get(), spatialKernel.get(), spatialSD,
+				applyGaussianKernelY(filterOutTmp.get(), gaussianOut.get(), spatialKernel.get(), spatialSD,
 					dimensions, j, i, width, height);
 			}
 		}
@@ -140,7 +139,7 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image) {
 	else {
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				BilateralFilterSeparable::applyXDirection(unaries, filterOutTmp.get(), image, bilateralSpatialKernel.get(),
+				applyBilateralKernelX(unaries, filterOutTmp.get(), image, bilateralSpatialKernel.get(),
 					bilateralIntensityKernel.get(), bilateralSpatialSD, bilateralIntensitySD,
 					dimensions, j, i, width, height);
 			}
@@ -148,7 +147,7 @@ void CRF::filterBilateral(const float *unaries, const unsigned char *image) {
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				BilateralFilterSeparable::applyYDirection(filterOutTmp.get(), bilateralOut.get(), image, bilateralSpatialKernel.get(),
+				applyBilateralKernelY(filterOutTmp.get(), bilateralOut.get(), image, bilateralSpatialKernel.get(),
 					bilateralIntensityKernel.get(), bilateralSpatialSD, bilateralIntensitySD,
 					dimensions, j, i, width, height);
 			}

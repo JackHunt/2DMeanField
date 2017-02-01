@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace MeanField::CUDA;
 using namespace MeanField::Filtering;
-using namespace MeanField::CUDA::Filtering;
 
 CRF::CRF(int width, int height, int dimensions, float spatialSD,
 	float bilateralSpatialSD, float bilateralIntensitySD, bool separable) :
@@ -110,14 +109,16 @@ const float *CRF::getQ() {
 }
 
 void CRF::filterGaussian(const float *unaries) {
+	dim3 blockDim(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
+	dim3 gridDim((int)ceil(width / blockDim.x), (int)ceil(height / blockDim.y));
 	if (separable) {
-		GaussianFilterSeparable::applyXDirection(unaries, (&filterOutTmp[0]).get(), (&spatialKernel[0]).get(), spatialSD, dimensions, width, height);
+		filterGaussianX_device << <gridDim, blockDim >> > ((&spatialKernel[0]).get(), unaries, (&filterOutTmp[0]).get(),
+			spatialSD, dimensions, width, height);
 		cudaDeviceSynchronize();
-		GaussianFilterSeparable::applyYDirection((&filterOutTmp[0]).get(), (&gaussianOut[0]).get(), (&spatialKernel[0]).get(), spatialSD, dimensions, width, height);
+		filterGaussianY_device << <gridDim, blockDim >> > ((&spatialKernel[0]).get(), (&filterOutTmp[0]).get(), (&gaussianOut[0]).get(),
+			spatialSD, dimensions, width, height);
 	}
 	else {
-		dim3 blockDim(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
-		dim3 gridDim((int)ceil(width / blockDim.x), (int)ceil(height / blockDim.y));
 		filterGaussian_device << <gridDim, blockDim >> > ((&spatialKernel[0]).get(), unaries, (&gaussianOut[0]).get(),
 			spatialSD, dimensions, width, height);
 	}
@@ -125,16 +126,16 @@ void CRF::filterGaussian(const float *unaries) {
 }
 
 void CRF::filterBilateral(const float *unaries, const unsigned char *image) {
+	dim3 blockDim(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
+	dim3 gridDim((int)ceil(width / blockDim.x), (int)ceil(height / blockDim.y));
 	if (separable) {
-		BilateralFilterSeparable::applyXDirection(unaries, (&filterOutTmp[0]).get(), image, (&bilateralSpatialKernel[0]).get(),
-			(&bilateralIntensityKernel[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
+		filterBilateralX_device << <gridDim, blockDim >> > ((&bilateralSpatialKernel[0]).get(), (&bilateralIntensityKernel[0]).get(),
+			unaries, image, (&filterOutTmp[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
 		cudaDeviceSynchronize();
-		BilateralFilterSeparable::applyYDirection((&filterOutTmp[0]).get(), (&bilateralOut[0]).get(), image, (&bilateralSpatialKernel[0]).get(),
-			(&bilateralIntensityKernel[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
+		filterBilateralY_device << <gridDim, blockDim >> > ((&bilateralSpatialKernel[0]).get(), (&bilateralIntensityKernel[0]).get(),
+			(&filterOutTmp[0]).get(), image, (&bilateralOut[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
 	}
 	else {
-		dim3 blockDim(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
-		dim3 gridDim((int)ceil(width / blockDim.x), (int)ceil(height / blockDim.y));
 		filterBilateral_device << <gridDim, blockDim >> > ((&bilateralSpatialKernel[0]).get(), (&bilateralIntensityKernel[0]).get(),
 			unaries, image, (&bilateralOut[0]).get(), bilateralSpatialSD, bilateralIntensitySD, dimensions, width, height);
 	}
@@ -185,6 +186,30 @@ void filterGaussian_device(const float *kernel, const float *input, float *outpu
 }
 
 __global__
+void filterGaussianX_device(const float *kernel, const float *input, float *output, float sd, int dim, int W, int H) {
+	int x = threadIdx.x + blockIdx.x*blockDim.x;
+	int y = threadIdx.y + blockIdx.y*blockDim.y;
+
+	if (x < 0 || x >= W || y < 0 || y >= H) {
+		return;
+	}
+
+	applyGaussianKernelX(input, output, kernel, sd, dim, x, y, W, H);
+}
+
+__global__
+void filterGaussianY_device(const float *kernel, const float *input, float *output, float sd, int dim, int W, int H) {
+	int x = threadIdx.x + blockIdx.x*blockDim.x;
+	int y = threadIdx.y + blockIdx.y*blockDim.y;
+
+	if (x < 0 || x >= W || y < 0 || y >= H) {
+		return;
+	}
+
+	applyGaussianKernelY(input, output, kernel, sd, dim, x, y, W, H);
+}
+
+__global__
 void filterBilateral_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
 	float *output, float spatialSD, float intensitySD, int dim, int W, int H) {
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
@@ -195,6 +220,32 @@ void filterBilateral_device(const float *spatialKernel, const float *intensityKe
 	}
 
 	applyBilateralKernel(spatialKernel, intensityKernel, input, rgb, output, spatialSD, intensitySD, dim, x, y, W, H);
+}
+
+__global__
+void filterBilateralX_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
+	float *output, float spatialSD, float intensitySD, int dim, int W, int H) {
+	int x = threadIdx.x + blockIdx.x*blockDim.x;
+	int y = threadIdx.y + blockIdx.y*blockDim.y;
+
+	if (x < 0 || x >= W || y < 0 || y >= H) {
+		return;
+	}
+
+	applyBilateralKernelX(input, output, rgb, spatialKernel, intensityKernel, spatialSD, intensitySD, dim, x, y, W, H);
+}
+
+__global__
+void filterBilateralY_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
+	float *output, float spatialSD, float intensitySD, int dim, int W, int H) {
+	int x = threadIdx.x + blockIdx.x*blockDim.x;
+	int y = threadIdx.y + blockIdx.y*blockDim.y;
+
+	if (x < 0 || x >= W || y < 0 || y >= H) {
+		return;
+	}
+
+	applyBilateralKernelY(input, output, rgb, spatialKernel, intensityKernel, spatialSD, intensitySD, dim, x, y, W, H);
 }
 
 __global__

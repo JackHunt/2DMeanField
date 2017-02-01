@@ -7,22 +7,18 @@ set(SHARED_HEADERS
 
 set(CPU_HEADERS
   CPU/meanfield_cpu.h
-  CPU/filtering_cpu.h
 )
 
 set(CPU_SOURCES
   CPU/meanfield_cpu.cpp
-  CPU/filtering_cpu.cpp
 )
 
 set(CUDA_HEADERS
   CUDA/meanfield_cuda.h
-  CUDA/filtering_cuda.h
 )
 
 set(CUDA_SOURCES
   CUDA/meanfield_cuda.cu
-  CUDA/filtering_cuda.cu
 )
 
 source_group(CPU FILES ${CPU_HEADERS} ${CPU_SOURCES})

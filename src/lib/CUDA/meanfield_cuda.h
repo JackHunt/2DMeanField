@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "cuda_util.h"
 #include "../shared/meanfield.h"
-#include "filtering_cuda.h"
 
 /**
  * \brief CUDA kernel to apply gaussian filter.
@@ -49,6 +48,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 __global__
 void filterGaussian_device(const float *kernel, const float *input, float *output, float sd, int dim, int W, int H);
+
+/**
+* \brief CUDA kernel to apply separable gaussian filter along the X dimension.
+*
+* @param kernel Gaussian kernel to be applied.
+* @param input Input distribution tensor/
+* @param output Output buffer to write to.
+* @param sd Standard deviation of the filter.
+* @param dim Third dimension of the tensor.
+* @param W Second dimension of the tensor.
+* @param H First dimension of the tensor.
+*/
+__global__
+void filterGaussianX_device(const float *kernel, const float *input, float *output, float sd, int dim, int W, int H);
+
+/**
+* \brief CUDA kernel to apply separable gaussian filter along the Y dimension.
+*
+* @param kernel Gaussian kernel to be applied.
+* @param input Input distribution tensor/
+* @param output Output buffer to write to.
+* @param sd Standard deviation of the filter.
+* @param dim Third dimension of the tensor.
+* @param W Second dimension of the tensor.
+* @param H First dimension of the tensor.
+*/
+__global__
+void filterGaussianY_device(const float *kernel, const float *input, float *output, float sd, int dim, int W, int H);
 
 /**
  * \brief CUDA kernel to apply bilateral filter.
@@ -66,6 +93,42 @@ void filterGaussian_device(const float *kernel, const float *input, float *outpu
  */
 __global__
 void filterBilateral_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
+	float *output, float spatialSD, float intensitySD, int dim, int W, int H);
+
+/**
+* \brief CUDA kernel to apply separable approximation to the bilateral filter along the X dimension.
+*
+* @param spatialKernel Gaussian kernel to be applied for spatial component.
+* @param intensityKernel Gaussian kernel to be applied for intensity component.
+* @param input Input distribution tensor.
+* @param rgb RGB image used for intensity filtering.
+* @param output Output buffer to write to.
+* @param spatialSD Standard deviation of spatial kernel.
+* @param intensitySD Standard deviation of intensity kernel.
+* @param dim Third dimension of the tensor.
+* @param W Second dimension of the tensor.
+* @param H First dimension of the tensor.
+*/
+__global__
+void filterBilateralX_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
+	float *output, float spatialSD, float intensitySD, int dim, int W, int H);
+
+/**
+* \brief CUDA kernel to apply separable approximation to the bilateral filter along the Y dimension.
+*
+* @param spatialKernel Gaussian kernel to be applied for spatial component.
+* @param intensityKernel Gaussian kernel to be applied for intensity component.
+* @param input Input distribution tensor.
+* @param rgb RGB image used for intensity filtering.
+* @param output Output buffer to write to.
+* @param spatialSD Standard deviation of spatial kernel.
+* @param intensitySD Standard deviation of intensity kernel.
+* @param dim Third dimension of the tensor.
+* @param W Second dimension of the tensor.
+* @param H First dimension of the tensor.
+*/
+__global__
+void filterBilateralY_device(const float *spatialKernel, const float *intensityKernel, const float *input, const unsigned char *rgb,
 	float *output, float spatialSD, float intensitySD, int dim, int W, int H);
 
 /**

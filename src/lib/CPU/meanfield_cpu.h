@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MEANFIELD_CPU_HEADER
 
 #include "../shared/meanfield.h"
-#include "filtering_cpu.h"
 #include <memory>
 
 namespace MeanField {
