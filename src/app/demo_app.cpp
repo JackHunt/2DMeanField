@@ -122,18 +122,18 @@ int main(int argc, char* argv[]) {
 #endif
 
 	//Create a new CRF and perform Mean Field Inference.
-//#ifdef WITH_CUDA
-//	MeanField::CUDA::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
-//#else
+#ifdef WITH_CUDA
+	MeanField::CUDA::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
+#else
 	MeanField::CPU::CRF crf(annotImage.cols, annotImage.rows, M, 30.0, 30.0, 45.0);
-//#endif
+#endif
 	crf.setSpatialWeight(5.0);
 	crf.setBilateralWeight(10.0);
-//#ifdef WITH_CUDA
-//	crf.runInference(rgb_device, unaries_device, 5);
-//#else
+#ifdef WITH_CUDA
+	crf.runInference(rgb_device, unaries_device, 5);
+#else
 	crf.runInference(rgbImage.data, unaries, 5);
-//#endif
+#endif
 
 	//Free device memory.
 #ifdef WITH_CUDA
@@ -144,11 +144,11 @@ int main(int argc, char* argv[]) {
 	//Get updated labelling from MAP estimate.
 	float *outputUnaries = new float[rgbImage.rows*rgbImage.cols*M];
 	const float *outputUnariesPtr = crf.getQ();
-//#ifdef WITH_CUDA
-//	cudaMemcpy(outputUnaries, outputUnariesPtr, rgbImage.rows*rgbImage.cols*M * sizeof(float), cudaMemcpyDeviceToHost);
-//#else
+#ifdef WITH_CUDA
+	cudaMemcpy(outputUnaries, outputUnariesPtr, rgbImage.rows*rgbImage.cols*M * sizeof(float), cudaMemcpyDeviceToHost);
+#else
 	memcpy(outputUnaries, outputUnariesPtr, rgbImage.rows*rgbImage.cols*M * sizeof(float));
-//#endif
+#endif
 	labellingFromUnaries(outputUnaries, outputLabelling, annotImage.cols, annotImage.rows, M);
 
 	//Build output image.
