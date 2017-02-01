@@ -3,20 +3,20 @@
 using namespace MeanField::CUDA::Filtering;
 
 void GaussianFilterSeparable::applyXDirection(const float *input, float *output, const float *kernel, float sd, int dim, int W, int H) {
-	dim3 blockDims(16, 16, 1);
+	dim3 blockDims(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
 	dim3 gridDims(static_cast<int>(ceil(static_cast<float>(W) / static_cast<float>(blockDims.x))), static_cast<int>(ceil(static_cast<float>(H) / static_cast<float>(blockDims.y))));
 	filterGaussianX_device << <gridDims, blockDims >> > (input, output, kernel, sd, dim, W, H);
 }
 
 void GaussianFilterSeparable::applyYDirection(const float *input, float *output, const float *kernel, float sd, int dim, int W, int H) {
-	dim3 blockDims(16, 16, 1);
+	dim3 blockDims(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
 	dim3 gridDims(static_cast<int>(ceil(static_cast<float>(W) / static_cast<float>(blockDims.x))), static_cast<int>(ceil(static_cast<float>(H) / static_cast<float>(blockDims.y))));
 	filterGaussianY_device << <gridDims, blockDims >> > (input, output, kernel, sd, dim, W, H);
 }
 
 void BilateralFilterSeparable::applyXDirection(const float *input, float *output, const unsigned char *rgb, const float *spatialKernel,
 	const float *intensityKernel, float spatialSD, float intensitySD, int dim, int W, int H) {
-	dim3 blockDims(16, 16, 1);
+	dim3 blockDims(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
 	dim3 gridDims(static_cast<int>(ceil(static_cast<float>(W) / static_cast<float>(blockDims.x))), static_cast<int>(ceil(static_cast<float>(H) / static_cast<float>(blockDims.y))));
 	int maxSD = (spatialSD > intensitySD) ? spatialSD : intensitySD;
 	filterBilateralX_device << <gridDims, blockDims >> > (input, output, rgb, spatialKernel, intensityKernel,
@@ -25,7 +25,7 @@ void BilateralFilterSeparable::applyXDirection(const float *input, float *output
 
 void BilateralFilterSeparable::applyYDirection(const float *input, float *output, const unsigned char *rgb, const float *spatialKernel,
 	const float *intensityKernel, float spatialSD, float intensitySD, int dim, int W, int H) {
-	dim3 blockDims(16, 16, 1);
+	dim3 blockDims(CUDA_BLOCK_DIM_SIZE, CUDA_BLOCK_DIM_SIZE, 1);
 	dim3 gridDims(static_cast<int>(ceil(static_cast<float>(W) / static_cast<float>(blockDims.x))), static_cast<int>(ceil(static_cast<float>(H) / static_cast<float>(blockDims.y))));
 	filterBilateralY_device << <gridDims, blockDims >> > (input, output, rgb, spatialKernel, intensityKernel,
 		spatialSD, intensitySD, dim, W, H);
@@ -179,7 +179,7 @@ void filterBilateralY_device(const float *input, float *output, const unsigned c
 
 		normaliser += spatialFactor*intensityFactor;
 		for (int i = 0; i < dim; i++) {
-			channelSums[i] += input[(idx*W + y)*dim + i] * spatialFactor*intensityFactor;
+			channelSums[i] += input[(idx*W + x)*dim + i] * spatialFactor*intensityFactor;
 		}
 	}
 
