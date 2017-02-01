@@ -62,13 +62,13 @@ namespace MeanField {
 			int sd_int = (sd_spatial > sd_intensity) ? (int)sd_spatial : (int)sd_intensity;
 			int idx_x, idx_y, idx_c, idx_n;
 			//Convolve for each channel.
-			for (int i = -sd_int; i < sd_int; i++) {
+			for (int i = -sd_int; i <= sd_int; i++) {
 				idx_y = y + i;
 				if (idx_y < 0 || idx_y >= H) {
 					continue;
 				}
 
-				for (int j = -sd_int; j < sd_int; j++) {
+				for (int j = -sd_int; j <= sd_int; j++) {
 					idx_x = x + j;
 					if (idx_x < 0 || idx_x >= W) {
 						continue;
@@ -77,10 +77,17 @@ namespace MeanField {
 					idx_c = 3 * (y*W + x);//Current pixel idx.
 					idx_n = 3 * (idx_y*W + idx_x);//Neighbour idx.
 
-					spatialFactor = spatial_kernel[(int)fabs((float)i)] * spatial_kernel[(int)fabs((float)j)];
-					intensityFactor = intensity_kernel[(int)fabs((float)rgb[idx_n] - (float)rgb[idx_c])] *//R
-						intensity_kernel[(int)fabs((float)rgb[idx_n + 1] - (float)rgb[idx_c + 1])] *//G
-						intensity_kernel[(int)fabs((float)rgb[idx_n + 2] - (float)rgb[idx_c + 2])];//B
+					spatialFactor = 1.0;
+					if (i >= -sd_spatial && i <= sd_spatial && j >= -sd_spatial && j <= sd_spatial) {
+						spatialFactor = spatial_kernel[(int)fabs((float)i)] * spatial_kernel[(int)fabs((float)j)];
+					}
+
+					intensityFactor = 1.0;
+					if (i >= -sd_intensity && i <= sd_intensity && j >= -sd_intensity && j <= sd_intensity) {
+						intensityFactor = intensity_kernel[(int)fabs((float)rgb[idx_n] - (float)rgb[idx_c])] *//R
+							intensity_kernel[(int)fabs((float)rgb[idx_n + 1] - (float)rgb[idx_c + 1])] *//G
+							intensity_kernel[(int)fabs((float)rgb[idx_n + 2] - (float)rgb[idx_c + 2])];//B
+					}
 
 					normaliser += spatialFactor*intensityFactor;
 
@@ -119,10 +126,17 @@ namespace MeanField {
 				int pixelIdx = 3 * (y*W + x);
 				int neighPixelIdx = 3 * (y*W + idx);
 
-				float spatialFactor = spatialKernel[static_cast<int>(fabs(static_cast<float>(r)))];
-				float intensityFactor = intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx]) - static_cast<float>(rgb[pixelIdx])))] *//R
-					intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 1]) - static_cast<float>(rgb[pixelIdx + 1])))] *//G
-					intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 2]) - static_cast<float>(rgb[pixelIdx + 2])))];//B
+				float spatialFactor = 1.0;
+				if (r >= -spatialSD && r <= spatialSD) {
+					spatialFactor = spatialKernel[static_cast<int>(fabs(static_cast<float>(r)))];
+				}
+
+				float intensityFactor = 1.0;
+				if (r >= -intensitySD && r <= intensitySD) {
+					intensityFactor = intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx]) - static_cast<float>(rgb[pixelIdx])))] *//R
+						intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 1]) - static_cast<float>(rgb[pixelIdx + 1])))] *//G
+						intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 2]) - static_cast<float>(rgb[pixelIdx + 2])))];//B
+				}
 
 				normaliser += spatialFactor*intensityFactor;
 				for (int i = 0; i < dim; i++) {
@@ -157,10 +171,17 @@ namespace MeanField {
 				int pixelIdx = 3 * (y*W + x);
 				int neighPixelIdx = 3 * (idx*W + x);
 
-				float spatialFactor = spatialKernel[static_cast<int>(fabs(static_cast<float>(r)))];
-				float intensityFactor = intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx]) - static_cast<float>(rgb[pixelIdx])))] *//R
-					intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 1]) - static_cast<float>(rgb[pixelIdx + 1])))] *//G
-					intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 2]) - static_cast<float>(rgb[pixelIdx + 2])))];//B
+				float spatialFactor = 1.0;
+				if (r >= -spatialSD && r <= spatialSD) {
+					spatialFactor = spatialKernel[static_cast<int>(fabs(static_cast<float>(r)))];
+				}
+
+				float intensityFactor = 1.0;
+				if (r >= -intensitySD && r <= intensitySD) {
+					intensityFactor = intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx]) - static_cast<float>(rgb[pixelIdx])))] *//R
+						intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 1]) - static_cast<float>(rgb[pixelIdx + 1])))] *//G
+						intensityKernel[static_cast<int>(fabs(static_cast<float>(rgb[neighPixelIdx + 2]) - static_cast<float>(rgb[pixelIdx + 2])))];//B
+				}
 
 				normaliser += spatialFactor*intensityFactor;
 				for (int i = 0; i < dim; i++) {
