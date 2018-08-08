@@ -1,12 +1,12 @@
 set(SHARED_HEADERS
-  shared/meanfield.h
-  shared/bilateral_filter.h
-  shared/gaussian_filter.h
-  shared/code_sharing.h
+  shared/meanfield.hpp
+  shared/bilateral_filter.hpp
+  shared/gaussian_filter.hpp
+  shared/code_sharing.hpp
 )
 
 set(CPU_HEADERS
-  CPU/meanfield_cpu.h
+  CPU/meanfield_cpu.hpp
 )
 
 set(CPU_SOURCES
@@ -14,7 +14,7 @@ set(CPU_SOURCES
 )
 
 set(CUDA_HEADERS
-  CUDA/meanfield_cuda.h
+  CUDA/meanfield_cuda.hpp
 )
 
 set(CUDA_SOURCES

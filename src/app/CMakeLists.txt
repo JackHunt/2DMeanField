@@ -1,5 +1,5 @@
 set(APP_HEADERS
-  demo_app.h
+  demo_app.hpp
 )
 
 set(APP_SOURCES
