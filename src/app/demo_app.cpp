@@ -94,8 +94,8 @@ int main(int argc, char* argv[]) {
     }
 
     //Read in RGB image and annotation.
-    cv::Mat rgbImage = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
-    cv::Mat annotImage = cv::imread(argv[2], CV_LOAD_IMAGE_COLOR);
+    cv::Mat rgbImage = cv::imread(argv[1], cv::IMREAD_COLOR);
+    cv::Mat annotImage = cv::imread(argv[2], cv::IMREAD_COLOR);
 
     if (!rgbImage.data || !annotImage.data) {
         std::cout << "Error reading one or more images." << std::endl;
